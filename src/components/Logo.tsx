@@ -1,9 +1,9 @@
 import { TrendingUp } from "lucide-react";
 
-export default function Logo({ size = "default" }: { size?: "default" | "large" }) {
+export default function Logo({ size = "default", onClick }: { size?: "default" | "large", onClick?: () => void }) {
   const isLarge = size === "large";
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-2 cursor-pointer" onClick={onClick}>
       <div
         className={`flex items-center justify-center rounded-xl bg-primary text-primary-foreground ${
           isLarge ? "h-12 w-12" : "h-9 w-9"
