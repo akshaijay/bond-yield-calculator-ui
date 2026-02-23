@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Calculator, DollarSign, Percent, Clock, Repeat } from "lucide-react";
 import type { BondInput, CouponFrequency } from "@/lib/bond-calculator";
 
 interface Props {
@@ -29,73 +30,82 @@ export default function BondInputForm({ onCalculate }: Props) {
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-lg font-semibold">Bond Parameters</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="faceValue">Face Value ($)</Label>
-            <Input
-              id="faceValue"
-              type="number"
-              min="0"
-              step="0.01"
-              value={faceValue}
-              onChange={(e) => setFaceValue(e.target.value)}
-              className="font-mono"
-              required
-            />
+    <Card className="w-full max-w-md mx-auto backdrop-blur-sm border-border/50 shadow-xl">
+      <CardContent className="p-6 sm:p-8">
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="faceValue" className="flex items-center gap-1.5 text-xs uppercase tracking-wider text-muted-foreground font-medium">
+                <DollarSign className="h-3 w-3" /> Face Value
+              </Label>
+              <Input
+                id="faceValue"
+                type="number"
+                min="0"
+                step="0.01"
+                value={faceValue}
+                onChange={(e) => setFaceValue(e.target.value)}
+                className="font-mono h-11 text-base"
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="couponRate" className="flex items-center gap-1.5 text-xs uppercase tracking-wider text-muted-foreground font-medium">
+                <Percent className="h-3 w-3" /> Coupon Rate
+              </Label>
+              <Input
+                id="couponRate"
+                type="number"
+                min="0"
+                max="100"
+                step="0.01"
+                value={couponRate}
+                onChange={(e) => setCouponRate(e.target.value)}
+                className="font-mono h-11 text-base"
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="marketPrice" className="flex items-center gap-1.5 text-xs uppercase tracking-wider text-muted-foreground font-medium">
+                <DollarSign className="h-3 w-3" /> Market Price
+              </Label>
+              <Input
+                id="marketPrice"
+                type="number"
+                min="0"
+                step="0.01"
+                value={marketPrice}
+                onChange={(e) => setMarketPrice(e.target.value)}
+                className="font-mono h-11 text-base"
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="years" className="flex items-center gap-1.5 text-xs uppercase tracking-wider text-muted-foreground font-medium">
+                <Clock className="h-3 w-3" /> Years to Maturity
+              </Label>
+              <Input
+                id="years"
+                type="number"
+                min="0.5"
+                step="0.5"
+                value={years}
+                onChange={(e) => setYears(e.target.value)}
+                className="font-mono h-11 text-base"
+                required
+              />
+            </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="couponRate">Annual Coupon Rate (%)</Label>
-            <Input
-              id="couponRate"
-              type="number"
-              min="0"
-              max="100"
-              step="0.01"
-              value={couponRate}
-              onChange={(e) => setCouponRate(e.target.value)}
-              className="font-mono"
-              required
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="marketPrice">Market Price ($)</Label>
-            <Input
-              id="marketPrice"
-              type="number"
-              min="0"
-              step="0.01"
-              value={marketPrice}
-              onChange={(e) => setMarketPrice(e.target.value)}
-              className="font-mono"
-              required
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="years">Years to Maturity</Label>
-            <Input
-              id="years"
-              type="number"
-              min="0.5"
-              step="0.5"
-              value={years}
-              onChange={(e) => setYears(e.target.value)}
-              className="font-mono"
-              required
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label>Coupon Frequency</Label>
+            <Label className="flex items-center gap-1.5 text-xs uppercase tracking-wider text-muted-foreground font-medium">
+              <Repeat className="h-3 w-3" /> Coupon Frequency
+            </Label>
             <Select value={frequency} onValueChange={(v) => setFrequency(v as CouponFrequency)}>
-              <SelectTrigger>
+              <SelectTrigger className="h-11">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -105,7 +115,8 @@ export default function BondInputForm({ onCalculate }: Props) {
             </Select>
           </div>
 
-          <Button type="submit" className="w-full mt-2">
+          <Button type="submit" className="w-full h-12 text-base font-semibold gap-2 mt-2" size="lg">
+            <Calculator className="h-4 w-4" />
             Calculate Yield
           </Button>
         </form>
