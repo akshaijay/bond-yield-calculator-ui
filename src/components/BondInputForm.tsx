@@ -1,17 +1,16 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calculator, DollarSign, Percent, Clock, Repeat } from "lucide-react";
-import type { BondInput, CouponFrequency } from "@/lib/bond-calculator";
+import type { CouponFrequency } from "@/lib/bond-calculator";
 
-interface Props {
-  onCalculate: (input: BondInput) => void;
-}
 
-export default function BondInputForm({ onCalculate }: Props) {
+export default function BondInputForm() {
+  const navigate = useNavigate();
   const [faceValue, setFaceValue] = useState("1000");
   const [couponRate, setCouponRate] = useState("5");
   const [marketPrice, setMarketPrice] = useState("950");
@@ -20,13 +19,26 @@ export default function BondInputForm({ onCalculate }: Props) {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onCalculate({
+    
+    const input = {
       faceValue: parseFloat(faceValue),
       annualCouponRate: parseFloat(couponRate),
       marketPrice: parseFloat(marketPrice),
       yearsToMaturity: parseFloat(years),
       couponFrequency: frequency,
+    };
+
+    // Build query string
+    const params = new URLSearchParams({
+      faceValue: faceValue,
+      annualCouponRate: couponRate,
+      marketPrice: marketPrice,
+      yearsToMaturity: years,
+      couponFrequency: frequency,
     });
+
+    // Navigate to results page with query parameters
+    navigate(`/results?${params.toString()}`);
   };
 
   return (
