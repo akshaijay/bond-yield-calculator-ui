@@ -11,11 +11,11 @@ import type { CouponFrequency } from "@/interfaces/bond";
 
 export default function BondInputForm() {
   const navigate = useNavigate();
-  const [faceValue, setFaceValue] = useState("1000");
-  const [couponRate, setCouponRate] = useState("5");
-  const [marketPrice, setMarketPrice] = useState("950");
-  const [years, setYears] = useState("10");
-  const [frequency, setFrequency] = useState<CouponFrequency>("semi-annual");
+  const [faceValue, setFaceValue] = useState("");
+  const [couponRate, setCouponRate] = useState("");
+  const [marketPrice, setMarketPrice] = useState("");
+  const [years, setYears] = useState("");
+  const [frequency, setFrequency] = useState<CouponFrequency>("annual");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -56,6 +56,7 @@ export default function BondInputForm() {
                 min="0"
                 step="0.01"
                 value={faceValue}
+                placeholder="1000"
                 onChange={(e) => setFaceValue(e.target.value)}
                 className="font-mono h-11 text-base"
                 required
@@ -73,6 +74,7 @@ export default function BondInputForm() {
                 max="100"
                 step="0.01"
                 value={couponRate}
+                placeholder="5"
                 onChange={(e) => setCouponRate(e.target.value)}
                 className="font-mono h-11 text-base"
                 required
@@ -89,6 +91,7 @@ export default function BondInputForm() {
                 min="0"
                 step="0.01"
                 value={marketPrice}
+                placeholder="950"
                 onChange={(e) => setMarketPrice(e.target.value)}
                 className="font-mono h-11 text-base"
                 required
@@ -105,6 +108,7 @@ export default function BondInputForm() {
                 min="0.5"
                 step="0.5"
                 value={years}
+                placeholder="10"
                 onChange={(e) => setYears(e.target.value)}
                 className="font-mono h-11 text-base"
                 required
