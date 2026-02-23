@@ -10,7 +10,7 @@ import {
   Bar,
 } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import type { CashFlowRow } from "@/lib/bond-calculator";
+import type { CashFlowRow } from "@/interfaces/bond";
 
 interface Props {
   rows: CashFlowRow[];

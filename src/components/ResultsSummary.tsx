@@ -1,5 +1,5 @@
 import BondResults from "@/components/BondResults";
-import type { BondOutput } from "@/lib/bond-calculator";
+import type { BondOutput } from "@/interfaces/bond";
 
 interface Props {
   results: BondOutput;

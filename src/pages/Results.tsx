@@ -1,13 +1,8 @@
 import { useSearchParams, useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
 import { motion } from "framer-motion";
-import {
-  calculateBond,
-  generateCashFlowSchedule,
-  type BondInput,
-  type BondOutput,
-  type CashFlowRow,
-} from "@/lib/bond-calculator";
+import { useQuery } from "@tanstack/react-query";
+import { type BondInput, type BondOutput, type CashFlowRow } from "@/interfaces/bond";
 import ResultsHeader from "@/components/ResultsHeader";
 import ResultsInputDisplay from "@/components/ResultsInputDisplay";
 import ResultsSummary from "@/components/ResultsSummary";
@@ -15,78 +10,132 @@ import CashFlowChart from "@/components/CashFlowChart";
 import CashFlowTable from "@/components/CashFlowTable";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
+import { api } from "@/lib/api";
+import { useAppDispatch } from "@/store/hooks";
+import { setBondData } from "@/store/bondSlice";
+
+interface ParsedParams {
+  input: BondInput | null;
+  error: string | null;
+}
+
+function parseSearchParams(searchParams: URLSearchParams): ParsedParams {
+  try {
+    const faceValue = parseFloat(searchParams.get("faceValue") || "");
+    const annualCouponRate = parseFloat(searchParams.get("annualCouponRate") || "");
+    const marketPrice = parseFloat(searchParams.get("marketPrice") || "");
+    const yearsToMaturity = parseFloat(searchParams.get("yearsToMaturity") || "");
+    const couponFrequency = (searchParams.get("couponFrequency") || "annual") as "annual" | "semi-annual";
+
+    if (
+      isNaN(faceValue) ||
+      isNaN(annualCouponRate) ||
+      isNaN(marketPrice) ||
+      isNaN(yearsToMaturity) ||
+      faceValue <= 0 ||
+      annualCouponRate < 0 ||
+      marketPrice <= 0 ||
+      yearsToMaturity <= 0
+    ) {
+      return {
+        input: null,
+        error:
+          "Invalid or missing query parameters. Please provide valid faceValue, annualCouponRate, marketPrice, and yearsToMaturity.",
+      };
+    }
+
+    if (couponFrequency !== "annual" && couponFrequency !== "semi-annual") {
+      return {
+        input: null,
+        error: "Invalid couponFrequency. Must be 'annual' or 'semi-annual'.",
+      };
+    }
+
+    const input: BondInput = {
+      faceValue,
+      annualCouponRate,
+      marketPrice,
+      yearsToMaturity,
+      couponFrequency,
+    };
+
+    return { input, error: null };
+  } catch (err) {
+    return {
+      input: null,
+      error: err instanceof Error ? err.message : "An error occurred while processing the bond calculation.",
+    };
+  }
+}
 
 const Results = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const [bondInput, setBondInput] = useState<BondInput | null>(null);
-  const [results, setResults] = useState<BondOutput | null>(null);
-  const [cashFlow, setCashFlow] = useState<CashFlowRow[]>([]);
-  const [error, setError] = useState<string | null>(null);
+  const dispatch = useAppDispatch();
 
-  useEffect(() => {
-    try {
-      // Parse query parameters
-      const faceValue = parseFloat(searchParams.get("faceValue") || "");
-      const annualCouponRate = parseFloat(searchParams.get("annualCouponRate") || "");
-      const marketPrice = parseFloat(searchParams.get("marketPrice") || "");
-      const yearsToMaturity = parseFloat(searchParams.get("yearsToMaturity") || "");
-      const couponFrequency = (searchParams.get("couponFrequency") || "annual") as "annual" | "semi-annual";
+  const { input, error: parseError } = useMemo(() => parseSearchParams(searchParams), [searchParams]);
 
-      // Validate required parameters
-      if (
-        isNaN(faceValue) ||
-        isNaN(annualCouponRate) ||
-        isNaN(marketPrice) ||
-        isNaN(yearsToMaturity) ||
-        faceValue <= 0 ||
-        annualCouponRate < 0 ||
-        marketPrice <= 0 ||
-        yearsToMaturity <= 0
-      ) {
-        setError("Invalid or missing query parameters. Please provide valid faceValue, annualCouponRate, marketPrice, and yearsToMaturity.");
-        return;
-      }
+  const {
+    data: results,
+    isLoading: isLoadingResults,
+    isError: isResultsError,
+    error: resultsError,
+  } = useQuery<BondOutput>({
+    queryKey: ["bondCalculation", input],
+    queryFn: async () => {
+      const response = await api.post<BondOutput>("/bond/calculate", input);
+      return response.data;
+    },
+    enabled: !!input && !parseError,
+  });
 
-      // Validate coupon frequency
-      if (couponFrequency !== "annual" && couponFrequency !== "semi-annual") {
-        setError("Invalid couponFrequency. Must be 'annual' or 'semi-annual'.");
-        return;
-      }
+  const {
+    data: cashFlow,
+    isLoading: isLoadingCashFlow,
+    isError: isCashFlowError,
+    error: cashFlowError,
+  } = useQuery<CashFlowRow[]>({
+    queryKey: ["cashFlowSchedule", input],
+    queryFn: async () => {
+      const response = await api.post<CashFlowRow[]>("/bond/cash-flow-schedule", input);
+      return response.data;
+    },
+    enabled: !!input && !parseError,
+  });
 
-      const input: BondInput = {
-        faceValue,
-        annualCouponRate,
-        marketPrice,
-        yearsToMaturity,
-        couponFrequency,
-      };
+  if (input && results && cashFlow) {
+    dispatch(
+      setBondData({
+        input,
+        results,
+        cashFlow,
+      }),
+    );
+  }
 
-      setBondInput(input);
-      setResults(calculateBond(input));
-      setCashFlow(generateCashFlowSchedule(input));
-      setError(null);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "An error occurred while processing the bond calculation.");
-    }
-  }, [searchParams]);
+  const effectiveError =
+    parseError ||
+    (isResultsError ? (resultsError as Error | null)?.message ?? "Failed to fetch bond results." : null) ||
+    (isCashFlowError ? (cashFlowError as Error | null)?.message ?? "Failed to fetch cash flow schedule." : null);
 
-  if (error) {
+  if (effectiveError) {
     return (
       <div className="min-h-screen bg-muted flex items-center justify-center px-4">
         <Alert variant="destructive" className="max-w-md">
           <AlertCircle className="h-4 w-4" />
           <AlertTitle>Error</AlertTitle>
-          <AlertDescription>{error}</AlertDescription>
+          <AlertDescription>{effectiveError}</AlertDescription>
         </Alert>
       </div>
     );
   }
 
-  if (!bondInput || !results) {
+  const isLoading = isLoadingResults || isLoadingCashFlow;
+
+  if (!input || isLoading || !results || !cashFlow) {
     return (
       <div className="min-h-screen bg-muted flex items-center justify-center">
-        <div className="text-muted-foreground">Loading...</div>
+        <div className="text-muted-foreground">Loading analysis...</div>
       </div>
     );
   }
@@ -107,7 +156,7 @@ const Results = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
         >
-          <ResultsInputDisplay input={bondInput} />
+          <ResultsInputDisplay input={input} />
         </motion.div>
 
         <motion.div
@@ -125,7 +174,7 @@ const Results = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
             >
-              <CashFlowChart rows={cashFlow} faceValue={bondInput.faceValue} />
+              <CashFlowChart rows={cashFlow} faceValue={input.faceValue} />
             </motion.div>
 
             <motion.div
@@ -133,7 +182,7 @@ const Results = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4 }}
             >
-              <CashFlowTable rows={cashFlow} faceValue={bondInput.faceValue} />
+              <CashFlowTable rows={cashFlow} faceValue={input.faceValue} />
             </motion.div>
           </>
         )}

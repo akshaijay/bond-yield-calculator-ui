@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calculator, DollarSign, Percent, Clock, Repeat } from "lucide-react";
-import type { CouponFrequency } from "@/lib/bond-calculator";
+import type { CouponFrequency } from "@/interfaces/bond";
 
 
 export default function BondInputForm() {

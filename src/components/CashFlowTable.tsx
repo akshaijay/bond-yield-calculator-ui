@@ -7,7 +7,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import type { CashFlowRow } from "@/lib/bond-calculator";
+import type { CashFlowRow } from "@/interfaces/bond";
 
 interface Props {
   rows: CashFlowRow[];
