@@ -1,6 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import type { BondOutput } from "@/lib/bond-calculator";
+import type { BondOutput } from "@/interfaces/bond";
 import { TrendingUp, TrendingDown, Minus, BarChart3, Target, Banknote, ArrowLeftRight } from "lucide-react";
 
 interface Props {

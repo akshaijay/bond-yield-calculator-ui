@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import type { BondInput } from "@/lib/bond-calculator";
+import type { BondInput } from "@/interfaces/bond";
 import { DollarSign, Percent, TrendingUp, Calendar, Clock } from "lucide-react";
 
 interface Props {
