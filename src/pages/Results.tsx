@@ -6,6 +6,7 @@ import { type BondInput, type BondOutput, type CashFlowRow } from "@/interfaces/
 import ResultsHeader from "@/components/ResultsHeader";
 import ResultsInputDisplay from "@/components/ResultsInputDisplay";
 import ResultsSummary from "@/components/ResultsSummary";
+import ResultsSkeleton from "@/components/ResultsSkeleton";
 import CashFlowChart from "@/components/CashFlowChart";
 import CashFlowTable from "@/components/CashFlowTable";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -134,8 +135,15 @@ const Results = () => {
 
   if (!input || isLoading || !results || !cashFlow) {
     return (
-      <div className="min-h-screen bg-muted flex items-center justify-center">
-        <div className="text-muted-foreground">Loading analysis...</div>
+      <div className="min-h-screen bg-muted">
+        {/* Decorative bg */}
+        <div className="fixed inset-0 -z-10 overflow-hidden">
+          <div className="absolute -top-[40%] -right-[20%] h-[600px] w-[600px] rounded-full bg-primary/5 blur-3xl" />
+          <div className="absolute -bottom-[30%] -left-[15%] h-[500px] w-[500px] rounded-full bg-primary/3 blur-3xl" />
+        </div>
+
+        <ResultsHeader onBack={() => navigate("/")} />
+        <ResultsSkeleton />
       </div>
     );
   }
